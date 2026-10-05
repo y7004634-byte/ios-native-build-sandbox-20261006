@@ -239,15 +239,17 @@ private actor NativeFitWorker {
     }
     private func requestNavigation(now: Double, force: Bool) {
         guard let map, let point = displayPosition, let destination, route.count >= 2 else { return }
-        guard force || now - lastNavigationMS >= 180 else { return }
-        lastNavigationMS = now
         let direct = DoorCameraGeometry.haversine(point, destination)
         let routed = remainingMeters
         let remaining = routed.map { max($0, direct.isFinite ? direct : 0) } ?? direct
+        let nextArrivalLock = DoorArrivalPolicy.locked(distance: remaining, wasLocked: arrival3DLocked)
+        let arrivalTransition = nextArrivalLock != arrival3DLocked
+        guard force || arrivalTransition || now - lastNavigationMS >= 180 else { return }
+        lastNavigationMS = now
         let fallback = headingKnown ? (heading.displayHeading ?? map.camera.heading) : map.camera.heading
         let targetBearing = routeForwardBearing(fallback: fallback)
-        let bearing = navigationBearing.update(target: targetBearing, nowMS: now, force: force) ?? targetBearing
-        arrival3DLocked = DoorArrivalPolicy.locked(distance: remaining, wasLocked: arrival3DLocked)
+        let bearing = navigationBearing.update(target: targetBearing, nowMS: now, force: force || arrivalTransition) ?? targetBearing
+        arrival3DLocked = nextArrivalLock
         let baseZoom = arrival3DLocked ? 18.15 : DoorArrivalPolicy.stable3DZoom(distance: remaining)
         let zoom = DoorArrivalPolicy.manualZoom(baseZoom, offset: zoomOffset)
         let pitch = 58.0
