@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#10151c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Apple 測試 · 581 門牌地圖 CANARY</title>
+  <link rel="stylesheet" href="./vendor/maplibre-gl.css" />
+  <link rel="stylesheet" href="./door-map.css?v=0.3.78-search3" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/app-icon-32.png?v=0.3.78-search3" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/app-icon-180.png?v=0.3.78-search3" />
+  <link rel="manifest" href="./manifest.webmanifest?v=0.3.78-search3" />
+<link rel="stylesheet" href="./native-main.css" />
+</head>
+<body>
+  <main id="app">
+    <div id="map" aria-label="主地圖"></div>
+
+    <section id="topHud" class="glass hud-card collapsed" aria-label="導航資訊">
+      <div class="hud-title-row">
+        <strong>581 門牌 <span class="hud-version">v0.3.78</span></strong>
+        <button id="hudCollapseBtn" type="button" class="hud-collapse-btn" aria-label="展開導航資訊" aria-expanded="false" aria-controls="hudDetails" title="展開導航資訊"><span class="chevron" aria-hidden="true">⌄</span></button>
+      </div>
+      <div class="hud-brief"><span id="gpsState" class="state-badge warn">等待定位</span></div>
+      <div id="hudDetails" hidden>
+        <div class="hud-metrics"><span id="modeText">北向固定</span><span id="distanceText">目的地未設定</span></div>
+        <div id="osmStatus" class="osm-status">OSM 待命</div>
+        <div id="deliveryStatus" class="route-status warn" hidden></div>
+        <div id="routeStatus" class="route-status">導航：等待 GPS / 目的地</div>
+        <div id="mainSceneStatus" class="scene-status">主圖：初始化</div>
+        <div class="hud-channel">CANARY · 導航詳細資訊</div>
+      </div>
+    </section>
+
+    <section id="insetCard" class="glass inset-card collapsed" aria-label="終點門牌小窗">
+      <div id="insetMap" aria-label="終點門牌地圖"></div>
+      <div id="insetEmpty" class="inset-empty">先設定目的地</div>
+      <div id="insetCorrectionReticle" class="inset-correction-reticle" aria-hidden="true"></div>
+      <div class="inset-map-tools">
+        <span class="mini-badge" aria-label="門牌小窗倍率">19.5×</span>
+        <button id="insetRecenterBtn" class="mini-icon-btn" type="button" aria-label="門牌小窗重新置中目的地" title="重新置中">⌖</button>
+        <button id="insetCorrectBtn" class="mini-correct-btn" type="button" aria-label="把小地圖準星位置設為目的地" title="定位修正">定位修正</button>
+      </div>
+      <div class="inset-foot">國土測繪中心 NLSC</div>
+      <button id="insetCollapseBtn" class="inset-title inset-toggle" type="button" aria-label="展開門牌小窗" aria-controls="insetMap" aria-expanded="false" title="往上展開">
+        <span class="chevron" aria-hidden="true">⌃</span>
+        <span id="insetTitleText"><span class="inset-caption">終點門牌</span><strong id="insetHouseNumber" class="inset-house-number">未設定</strong></span>
+        <span id="insetSideHint" class="inset-side-hint" hidden></span>
+      </button>
+    </section>
+
+    <nav id="controls" class="control-stack" aria-label="常用地圖控制">
+      <button id="overviewBtn" class="route-summary-btn" type="button" title="FIT 鎖定：剩餘路線自動放滿畫面" aria-label="FIT 鎖定：剩餘路線自動放滿畫面" aria-pressed="false">
+        <span class="fit-state" aria-hidden="true">FIT</span>
+        <span id="quickDistance" class="quick-distance">-- km</span>
+        <span id="quickEta" class="quick-eta">-- 分</span>
+              </button>
+      <button id="followBtn" class="round-btn active" type="button" title="回到目前位置並恢復跟隨" aria-label="回到目前位置並恢復跟隨" aria-pressed="true">⌖</button>
+      <button id="headingBtn" class="round-btn" type="button" title="鏡頭前行模式" aria-label="鏡頭前行模式" aria-pressed="false">↑</button>
+      <button id="routeBtn" class="round-btn route" type="button" title="開始導航" aria-label="開始導航" aria-pressed="false"><svg class="route-icon" viewBox="0 0 28 28" aria-hidden="true"><circle cx="6" cy="22" r="2.8"/><path d="M8.8 22h3.8c3 0 4.2-1.5 4.2-4.1v-5.5c0-2.3 1.4-3.8 3.7-3.8H23"/><path d="M19.5 5.2 23 8.6l-3.5 3.4"/></svg></button>
+      <button id="moreBtn" class="round-btn more-btn" type="button" title="更多功能" aria-label="更多功能" aria-controls="morePanel" aria-expanded="false">⋯</button>
+    </nav>
+
+    <div id="centerPickReticle" class="center-pick-reticle" hidden aria-hidden="true"></div>
+    <section id="centerCoordPanel" class="glass center-coord-panel" hidden aria-label="地圖中心座標">
+      <button id="centerCoordToggle" type="button" class="center-coord-toggle" aria-expanded="false" aria-controls="centerCoordBody">
+        <span class="center-coord-toggle-title">地圖中心</span>
+        <span id="centerCoordModeText" class="center-coord-mode">關閉</span>
+        <span class="center-coord-chevron" aria-hidden="true">⌃</span>
+      </button>
+      <div id="centerCoordBody" class="center-coord-body" hidden>
+        <div class="center-coord-main"><span>座標</span><strong id="centerCoordText">--</strong></div>
+        <div class="center-coord-actions">
+          <button id="copyCenterCoordBtn" type="button" class="secondary-btn">複製座標</button>
+          <button id="navigateCenterBtn" type="button" class="primary-btn">導航到這裡</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="morePanel" class="glass more-panel" aria-label="更多地圖功能" hidden>
+      <div class="more-title">更多功能</div>
+      <label class="area-overlay-row"><input id="areaOverlayToggle" type="checkbox" checked> 顯示道路避開區範圍</label>
+      <label class="area-overlay-row"><input id="buildings3dToggle" type="checkbox" checked aria-describedby="buildings3dStatus"> 3D 自適應導航（關閉＝2D）</label>
+      <div id="buildings3dStatus" class="extra-layer-note">目標清楚、鄰近門牌保留；關掉後維持 2D。高度為示意，非實測。</div>
+      <label class="area-overlay-row"><input id="gogoroToggle" type="checkbox"> Gogoro 交換站</label>
+      <div class="extra-layer-note"><span id="gogoroStatus">已關閉 · 不載入站點</span><button id="gogoroRefreshBtn" type="button" hidden>重試／更新</button></div>
+      <div id="houseLayerStatus" class="extra-layer-note">路徑兩側輔助門牌：固定淡色小字、始終正向；精準位置看小地圖／原始圖</div>
+      <div class="more-grid">
+        <button id="viaManageBtn" class="more-option" type="button">編輯路線</button>
+        <button id="viaClearBtn" hidden class="more-option" type="button">清除全部途經點</button>
+        <button id="areasManageBtn" class="more-option" type="button">自訂道路避開區</button>
+        <button id="powerDiagBtn" class="more-option" type="button" title="5 分鐘運算／耗電診斷"><span class="more-icon" aria-hidden="true">⚡</span><span>耗電診斷</span></button>
+        <button id="themeBtn" class="more-option" type="button" title="切換深色/淺色" aria-label="切換地圖深色淺色"><span class="more-icon" aria-hidden="true">☾</span><span>日夜配色</span></button>
+        <button id="northModeBtn" class="more-option" type="button" title="北向固定模式" aria-label="切換北向固定模式" aria-pressed="false"><span class="more-icon" aria-hidden="true">N</span><span>北向固定</span></button>
+        <button id="avatarBtn" class="more-option" type="button" title="導航角色" aria-label="切換導航角色"><span class="more-icon" aria-hidden="true">角</span><span>導航角色</span></button>
+        <button id="offlineBtn" class="more-option offline-data" type="button" title="台中離線導航資料" aria-label="管理台中離線導航資料"><span class="more-icon" aria-hidden="true">↓</span><span>離線資料</span></button>
+        <button id="destBtn" class="more-option" type="button" title="搜尋地址或貼上座標" aria-label="搜尋地址或貼上座標"><span class="more-icon" aria-hidden="true">⌕</span><span>搜尋地址</span></button>
+        <button id="pipViewBtn" class="more-option active" type="button" aria-pressed="true" title="上方有 PiP 時保留下方導航視野"><span class="more-icon" aria-hidden="true">▣</span><span>PiP 視野 · <span class="option-state">已開啟</span></span></button>
+        <button id="routeVisibilityBtn" class="more-option active" type="button" aria-pressed="true" title="導航路線顯示開關"><span class="more-icon" aria-hidden="true">路</span><span>路線開關</span></button>
+      </div>
+    </section>
+    <section id="gogoroPanel" class="glass gogoro-panel" aria-label="交換站資訊" hidden>
+      <div class="extra-panel-title"><span>Gogoro 交換站</span><button id="gogoroCloseBtn" type="button" aria-label="關閉站點資訊">×</button></div>
+      <strong id="gogoroName"></strong><p id="gogoroAddress"></p><p id="gogoroInfo"></p><small id="gogoroStamp"></small>
+      <p id="gogoroRouteStatus" role="status"></p>
+      <button id="gogoroViaBtn" class="primary-btn" type="button">先換電，再去原目的地</button>
+      <button id="gogoroDirectBtn" class="secondary-btn" type="button">導航到這站</button>
+      <small>「只去這站」會取代原目的地與途經點。關閉圖層不取消已套用的路線。</small>
+    </section>
+    <button id="creditsBtn" class="credits-btn" type="button" aria-label="查看地圖資料來源" title="地圖資料來源">ⓘ</button>
+    <div id="creditsIntro" class="credits-intro">© OpenStreetMap contributors · 國土測繪中心 NLSC</div>
+    <dialog id="creditsDialog">
+      <form method="dialog" class="dialog-card credits-card">
+        <h2>地圖資料來源</h2>
+        <p><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors · ODbL</a></p>
+        <p><a href="https://maps.nlsc.gov.tw/" target="_blank" rel="noopener noreferrer">國土測繪中心 NLSC</a>（近距離主圖細節／門牌小地圖）</p>
+        <p><a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener noreferrer">OpenMapTiles</a> · MapLibre</p>
+        <p>主圖 Zoom 17 起顯示 OSM／已下載索引的獨立門牌；不是全台完整門牌。Zoom 19.35 起使用國土測繪細節補充。左下小地圖保留原始配色。</p>
+        <p><a href="https://network.gogoro.com/tw/coverage/" target="_blank" rel="noopener noreferrer">Gogoro 官方交換站地圖</a>：本程式顯示公開站點位置，非 Gogoro 官方 App；未取得即時電池數。群聚數字表示站數。</p>
+        <button class="secondary-btn" type="submit">關閉</button>
+      </form>
+    </dialog>
+
+    <section id="permissionCard" class="sheet glass" hidden>
+      <div class="sheet-title">需要 GPS 定位</div>
+      <div class="sheet-copy">頁面會先自動嘗試定位；若 iOS Safari 沒有回應，請點一次「啟用 GPS」來觸發網站定位權限。</div>
+      <button id="startSensorsBtn" class="primary-btn" type="button">啟用 GPS</button>
+      <button id="setDestFromSheetBtn" class="secondary-btn" type="button">先設定目的地</button>
+    </section>
+
+
+    <dialog id="avatarDialog">
+      <form method="dialog" class="dialog-card avatar-dialog-card">
+        <h2>導航角色</h2>
+        <p>保留經典藍點，也可以換成 Q 版角色。角色會依目前畫面行進方向切換正面／背面／側向。</p>
+        <div class="avatar-grid">
+          <button type="button" class="avatar-choice" data-avatar="classic">
+            <span class="avatar-preview classic-preview"><span></span></span>
+            <strong>經典</strong>
+            <small>藍點＋方向扇形</small>
+          </button>
+          <button type="button" class="avatar-choice" data-avatar="goku">
+            <img src="./assets/avatar_goku_nimbus.png" alt="" />
+            <strong>悟空・觔斗雲</strong>
+            <small>Q 版 CANARY</small>
+          </button>
+          <button type="button" class="avatar-choice" data-avatar="luffy">
+            <img src="./assets/avatar_luffy.png" alt="" />
+            <strong>魯夫</strong>
+            <small>Q 版 CANARY</small>
+          </button>
+        </div>
+        <div class="dialog-actions single">
+          <button value="cancel" class="secondary-btn" type="submit">關閉</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="offlineDialog">
+      <div class="dialog-card offline-dialog-card">
+        <h2>台中離線導航資料</h2>
+        <p>一次下載三批預建成品：道路/路口、社區建物入口、結構化門牌索引。手機只從 Cloudflare 靜態檔高速下載，不再自己逐區塊查 Overpass。</p>
+        <p class="extra-layer-note">此測試版已內建核對資料；刪除只清除下載快取，內建資料隨 App 保留。</p><div id="offlinePackStatus" class="offline-status">尚未檢查資料包</div>
+        <div class="offline-source-list">
+          <div><strong>① 道路/路口離線資料</strong><span id="offlineCoreStatus">未下載</span></div>
+          <div><strong>② 社區/建物/入口</strong><span id="offlinePlacesStatus">未下載</span></div>
+          <div><strong>③ 門牌索引</strong><span id="offlineAddressStatus">未下載</span></div>
+          <div><strong>④ 線上算路資料</strong><span id="routeDataStatus">尚未檢查</span></div>
+        </div>
+        <div class="offline-progress-wrap">
+          <div id="offlineProgressBar" class="offline-progress-bar"><i></i></div>
+          <div id="offlineProgressText" class="offline-progress-text">等待操作</div>
+        </div>
+        <div class="offline-note">來源：OpenStreetMap/Geofabrik/Overpass（ODbL）＋臺中市政府 GIS 門牌開放資料（政府資料開放授權條款第1版）。官方門牌隨完整包備妥；iPhone 只下載成品。道路限制由線上 Valhalla 機車路由套用，單行、禁止進入、禁行機車與禁轉等限制不另外畫滿主圖。</div>
+        <div class="dialog-actions offline-actions">
+          <button id="offlineDeleteBtn" class="secondary-btn danger" type="button">刪除下載快取</button>
+          <button id="offlineDownloadBtn" class="primary-btn" type="button">下載 / 補齊離線快取</button>
+        </div>
+        <div class="dialog-actions single">
+          <button id="offlineCloseBtn" class="secondary-btn" type="button">關閉</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="destDialog">
+      <form method="dialog" class="dialog-card">
+        <h2>設定目的地</h2>
+        <p>可輸入店名／場所／台灣地址、緯度經度，或貼 Google Maps 分享連結。台中離線資料會邊打邊顯示候選。</p>
+        <label for="destInput">地址 / 座標 / Google Maps 分享連結</label>
+        <input id="destInput" inputmode="search" autocomplete="off" autocapitalize="off" spellcheck="false"
+               placeholder="例：輕井澤、享鴨、自由路二段 94 號" />
+        <div id="destError" class="error-text" aria-live="polite"></div>
+        <div id="addressResults" class="address-results" aria-live="polite"></div>
+        <div id="searchHint" class="geocode-attribution">本機候選：台中已下載 OSM 場所索引；網路補充：© OpenStreetMap contributors · Nominatim（按下搜尋才查）</div>
+        <div class="dialog-actions">
+          <button value="cancel" class="secondary-btn" type="submit">取消</button>
+          <button id="applyDestBtn" value="default" class="primary-btn" type="button">搜尋 / 套用</button>
+        </div>
+      </form>
+    </dialog>
+
+    <section id="routeEditPanel" class="glass route-edit-panel" hidden aria-label="指定經過位置">
+      <div class="route-edit-title"><strong id="routeEditTitle">指定經過這裡</strong><button id="routeEditCloseBtn" type="button" aria-label="關閉面板，保留已套用途經點">×</button></div>
+      <div id="viaPointRows" class="via-point-rows" aria-label="已套用的途經點"></div>
+      <p id="routeEditStatus" role="status"></p>
+      <div id="viaDraftActions" class="route-edit-actions" hidden><button id="viaReselectBtn" class="secondary-btn" type="button">重選位置</button><button id="viaClearSelectionBtn" class="secondary-btn" type="button">清除選取</button></div>
+      <div id="viaPreviewActions" class="route-edit-actions"><button id="viaPreviewBtn" class="secondary-btn" type="button">預覽經過這裡</button><button id="viaApplyBtn" class="primary-btn" type="button" disabled>走這裡</button></div>
+      <div class="route-edit-actions"><button id="viaAddBtn" class="secondary-btn" type="button" hidden>新增途經點</button><button id="viaRemoveAllBtn" class="secondary-btn" type="button" hidden>清除全部</button></div>
+      <button id="areaCreateBtn" class="secondary-btn" type="button">標記道路避開區</button>
+    </section>
+    <div id="viaPickHint" class="glass via-pick-hint" hidden role="status"><span id="viaPickHintText">長按地圖重選位置</span><button id="viaPickCancelBtn" type="button" class="secondary-btn">取消</button></div>
+
+    <dialog id="powerDiagDialog"><div class="dialog-card power-diag-card">
+      <h2>5 分鐘耗電診斷</h2>
+      <p>只統計 Door Map 的 GPS／地圖重繪／資料更新／網路等工作次數；不記錄 GPS 軌跡、不上傳資料，也無法讀取 iPhone 真實溫度或瓦數。</p>
+      <div id="powerDiagStatus" class="extra-layer-note">尚未測試</div>
+      <pre id="powerDiagReport" class="power-diag-report">按「開始 5 分鐘」後正常使用導航。測試完成會自動停止並產生報告。</pre>
+      <div class="dialog-actions">
+        <button id="powerDiagStartBtn" class="primary-btn" type="button">開始 5 分鐘</button>
+        <button id="powerDiagStopBtn" class="secondary-btn" type="button" disabled>提前停止</button>
+      </div>
+      <button id="powerDiagCloseBtn" class="secondary-btn" type="button">關閉</button>
+    </div></dialog>
+
+    <dialog id="avoidAreaDialog"><form method="dialog" class="dialog-card">
+      <h2>自訂道路避開區</h2><p>用來避開市場、難走路段；不記錄客人或上樓資訊。不是即時封路資料。保存後重算本次路線；起終點／途經點在區內時該區會放行。</p>
+      <label>名稱<input id="areaName" maxlength="40" placeholder="例如：晚間市場入口" autocomplete="off"></label>
+      <label>範圍<select id="areaRadius"><option value="40">半徑 40m</option><option value="80" selected>半徑 80m</option><option value="120">半徑 120m</option><option value="200">半徑 200m</option></select></label>
+      <div class="area-times"><label>開始<input id="areaStart" type="time" value="00:00"></label><label>結束<input id="areaEnd" type="time" value="00:00"></label></div>
+      <p>台北時間，每日套用；開始＝結束為全天，也支援 18:00–00:00。</p>
+      <label>備註<input id="areaNote" maxlength="160" placeholder="例如：不要穿越，從外圍走" autocomplete="off"></label>
+      <p id="areaEditStatus" class="error-text"></p>
+      <div class="dialog-actions"><button type="submit" class="secondary-btn">取消</button><button id="areaSaveBtn" type="button" class="primary-btn">保存並重算</button></div>
+    </form></dialog>
+    <dialog id="avoidAreasDialog"><form method="dialog" class="dialog-card">
+      <h2>我的道路避開區</h2><p>僅存本機，最多 50 區；每次路線最多套用附近 8 區。不會自動替整個夜市畫禁區。橘色＝設定生效，灰色＝未到時段或本次放行；停用後不畫。顯示開關不會停用避讓。</p>
+      <div id="avoidAreaRows"></div>
+      <button id="areasExportBtn" class="secondary-btn" type="button">匯出備份</button>
+      <label class="area-import">匯入備份<input id="areasImportFile" type="file" accept="application/json,.json"></label>
+      <button class="secondary-btn" type="submit">關閉</button>
+    </form></dialog>
+
+    <dialog id="avoidAreaDetailDialog"><form method="dialog" class="dialog-card">
+      <h2 id="areaDetailTitle">道路避開區</h2>
+      <p id="areaDetailMeta"></p><p id="areaDetailState" role="status"></p><p id="areaDetailNote"></p>
+      <div class="area-detail-actions">
+        <button id="areaDetailLocateBtn" type="button" class="secondary-btn">查看位置</button>
+        <button id="areaDetailToggleBtn" type="button" class="secondary-btn">停用</button>
+        <button id="areaDetailDeleteBtn" type="button" class="secondary-btn">刪除</button>
+        <button type="submit" class="primary-btn">關閉</button>
+      </div>
+    </form></dialog>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>window.addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT')window.__581AssetFailure=true;},true);</script>
+  <script src="./vendor/maplibre-gl.js"></script>
+  <script src="./native-map-engine.js"></script>
+  <script src="./native-bundle-data.js"></script>
+  <script src="./maps-input.js?v=0.3.78-search3" integrity="sha384-T6G2z8K2dgwlyxKzBj4Yr5FUAnA/hwVGxzNGpNK/p3wl14inTna1Fv8pdEtzPRyk"></script>
+  <script src="./delivery-tools.js?v=0.3.78-search3" integrity="sha384-DEdbeVXAKXZ7n/tUJlVuYCmlAGXU8UyR2QIaxWPvzwX2yr25ocxOk6iy0RNX6lPE"></script>
+  <script src="./fit-camera.js?v=0.3.78-fitlock1" integrity="sha384-Y/Wfv/zdgNzXEd+++xtyCU9TAOGPDsBBgVlOrqiyma6H92vgM1R69MImymcSPoOM"></script>
+  <script src="./map-extras.js?v=0.3.78-search3" integrity="sha384-OmRIuLH0xJy+o12MVYMxxEgC0856229c+3uTKZQvO2gBKjupG1mOcMLSY3R5dB5u"></script>
+  <script src="./official-addresses.js?v=0.3.78-search3" integrity="sha384-fcQ1bphX8Du+8rCiq5opM+jah9oMK4UmGQo16r4aC+5wYf1bKtOP/5rhNmbM490l"></script>
+  <script src="./native-house-layer.js?v=0.3.78-search3" integrity="sha384-Gkg6KaCeheyAu4S195DNKfYC4bQktQPG1hy2SFdzEoy/VRR2+vLFyH7Tis07aREk"></script>
+  <script src="./map-extras-ui.js?v=0.3.78-search3" integrity="sha384-wF5o67q4vodRVQCOdLwaW1b9XeDoorxjak2l9jlBYhgssI6eF8r5taOCDFWuB3an"></script>
+  <script src="./search-core.js?v=0.3.78-community2" integrity="sha384-r/uCzt+LWyywKJrMJQunFo4+2mosvm0Kl2orZ2ZQsxCOw8L/3rbEUhy6dVLmxy+s"></script>
+  <script src="./local-search.js?v=0.3.78-search4" integrity="sha384-sq/qCHA9rX+Ei9vCZIqo+zSwC91phS2kkAiYyeQWBTPefTj618bmZ0ibt00Di0Nr"></script>
+  <script src="./google-address-fallback.js?v=0.3.78-search3" integrity="sha384-E9szudbf5TupPg2hyyDj4+MP+sOy6rqDAwa2cV1RhaTA/ulcr8kD50hgSNFVLyo6"></script>
+  <script src="./supplemental-poi.js?v=0.3.78-search3" integrity="sha384-zrzkFfODgSQ7GUX6SpVyNsXJsWveKaw7ZYXiZr4+R79vh3sWFmFzMmarI39qc+7l"></script>
+  <script src="./target-selection.js?v=0.3.78-search3" integrity="sha384-x3e24YSP64HF4+UlVUlNG4pKdfaDvuaq6SiCNgF6Nml7ARbsjmzsdX7Ah3pzXTQ+"></script>
+  <script src="./target-envelope.js?v=0.3.78-search3" integrity="sha384-KiKsde68BcgwS4QbSeQwDD5GMrBtwcYTFv75Zq32BwE4VUxOGYo6EjXFrG2n9PbH"></script>
+  <script src="./buildings-3d.js?v=0.3.78-search3" integrity="sha384-165knK/js2AAk5fisdgOfyDQSXyePKhMjIF6TwnWt8jEcIAhYjI7Q8MkV3ZZX/Bo"></script>
+  <script src="./adaptive-scene.js?v=0.3.78-search3" integrity="sha384-VhxqaZRRfbc8ZIy+N5YyTyjR2QyM087LJfuoTyPTRSt4Y+RS7LKkL2eFaPwbrDxX"></script>
+  <script src="./visual-motion.js?v=0.3.78-fitlock6" integrity="sha384-arszdYlBKi0EuW7x2k1sUEzE7P3/aqlSXH0su141Nkpd201BC2L04He6LniSz3AS"></script>
+  <script src="./arrival-camera.js?v=0.3.78-search3" integrity="sha384-l2vi6HltUlB6tlgusWXgXUtSF78n8jfVtbnNhC+034WgKwAPsgJiLRJ5TSC51RUd"></script>
+  <script src="./destination-card.js?v=0.3.78-search3" integrity="sha384-+z7rNTSEIRQc3R5kno843GPjbG7eCKUEIhxPEHEim6RylPmN38qav9QhyOEWBQ/y"></script>
+  <script src="./power-diagnostics.js?v=0.3.78-search3" integrity="sha384-W+F7GxoEds18cD4rZoyXHtrm16djvlHP11AgDjo1NwdpO7iJWHpOsaPe2n8MOmho"></script>
+  <script src="./route-personal.js?v=0.3.78-search3" integrity="sha384-DoBAvmkzHfsAMO8kUt/Y8mw8BaVJ0Mo/tdw+ULFJvLPLT6w+70eVG7LsR8bDf3LI"></script>
+  <script src="./planner-ui.js?v=0.3.78-search4" integrity="sha384-bdcNpiGsbSb2G3Enh3EIIJEyR1ss4X+DvwICMyndAiLRTy1hLxVZ71IWz5Og82rQ"></script>
+  <script src="./official-communities.js?v=0.3.78-community3" integrity="sha384-wuYyysqEgt++iyFzHzclo40fi5uZAiAPTBsXMUzwDaOu9xA0Z3/ixdSLWKGPBsLI"></script>
+  <script src="./camera-interaction.js?v=0.3.78-fitlock5" integrity="sha384-GRZ6RbMC0BGF6I+DDjg9mnItqAIe8wbfCXAWymlBRFGBYlonb44cXXketB6M+1uF"></script>
+  <script src="./door-map.js?v=0.3.78-fitlock6" integrity="sha384-eG2LVNwfoe3gJHpKIMp7VWteWKhbQtixSnJ0SKZwO6KbMu1qohRFBCur9pCCL97t"></script>
+  <script>
+  (function(){
+    if(!window.__581AssetFailure&&window.__581DoorMapCanary&&window.__581DoorMapCanary.VERSION==='0.3.78-standalone')return;
+    var key='581-asset-retry-0378-fitlock6';
+    try{if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,'1');var u=new URL(location.href);u.searchParams.set('__asset_retry','0378fit6');location.replace(u.href);return;}}catch(e){}
+    var box=document.createElement('div');box.setAttribute('role','alert');box.style.cssText='position:fixed;inset:0;z-index:99999;background:#17212b;color:white;padding:30px;font:18px sans-serif';box.textContent='更新檔案尚未完整載入，請重新載入。個人路線與備份保留。';var b=document.createElement('button');b.textContent='重新載入';b.onclick=function(){try{sessionStorage.removeItem(key);}catch(e){}location.reload();};box.append(b);document.body.append(box);
+  })();
+  </script>
+</body>
+</html>

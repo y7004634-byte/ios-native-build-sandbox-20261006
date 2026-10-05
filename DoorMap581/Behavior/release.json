@@ -1,0 +1,12 @@
+{
+  "version": "0.3.78",
+  "build": "truthful-generic-search-pins-poi-master-r2-community-1150630-v2-cache1-fitlock6",
+  "releasedAt": "2026-10-04T14:58:08.4434277Z",
+  "candidateOnly": false,
+  "communityVersion": "tcg-community-1150630-v2",
+  "communityMappedIdentities": 7285,
+  "communitySearchIdentityUnion": 8796,
+  "baseDeployment": "9c0f8718-a497-4b86-b96b-02095901e065",
+  "communityRuntimeRevision": "cache1",
+  "cameraRevision": "fitlock6"
+}

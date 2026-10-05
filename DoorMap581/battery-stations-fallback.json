@@ -1,0 +1,458 @@
+{
+  "stations": [
+    {
+      "id": "osm:way/1111920681",
+      "lat": 24.133708,
+      "lng": 120.668796,
+      "name": "藍興公園˙(大新街)GOGORO電池站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6060805500",
+      "lat": 24.141074,
+      "lng": 120.685636,
+      "name": "gogoro",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6008987272",
+      "lat": 24.154058,
+      "lng": 120.71188,
+      "name": "Gogoro 全聯台中太平店站",
+      "address": "411台中市太平區樹德路117號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6008987273",
+      "lat": 24.149346,
+      "lng": 120.715331,
+      "name": "Gogoro 家樂福便利購太平環中店站",
+      "address": "411台中市太平區環中東路三段567號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/13380387789",
+      "lat": 23.963516,
+      "lng": 120.476002,
+      "name": "Gogoro 電池交換站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545396",
+      "lat": 24.023523,
+      "lng": 120.825851,
+      "name": "HiLife 南投國姓店站",
+      "address": "544南投縣國姓鄉中正路一段100-1號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/13226963418",
+      "lat": 24.080986,
+      "lng": 120.538112,
+      "name": "Gogoro 電池交換站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/10241485261",
+      "lat": 24.103992,
+      "lng": 120.62446,
+      "name": "Gogoro 電池交換站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/11393862795",
+      "lat": 24.139841,
+      "lng": 120.646192,
+      "name": "Gogoro 電池交換站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6533504769",
+      "lat": 24.177688,
+      "lng": 120.682553,
+      "name": "車麗屋台中崇德店站",
+      "address": "臺中市北屯區崇德二路二段225號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6298714124",
+      "lat": 24.193269,
+      "lng": 120.681615,
+      "name": "全聯台中四平店站",
+      "address": "臺中市北屯區四平路523號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6298714121",
+      "lat": 24.170896,
+      "lng": 120.690824,
+      "name": "中油昌平路加油站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6298714119",
+      "lat": 24.171295,
+      "lng": 120.694898,
+      "name": "Gogoro 北屯文心授權服務中心站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6298714118",
+      "lat": 24.175692,
+      "lng": 120.698912,
+      "name": "全聯台中北屯二店站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6298714117",
+      "lat": 24.179657,
+      "lng": 120.701376,
+      "name": "中油北屯加油站",
+      "address": "臺中市北屯區北屯路951號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/10925468810",
+      "lat": 24.197083,
+      "lng": 120.70251,
+      "name": "中油美得潭子加油站",
+      "address": "427012臺中市潭子區中山路一段229號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/9060835153",
+      "lat": 24.173604,
+      "lng": 120.879073,
+      "name": "全家和平農會店站",
+      "address": "臺中市和平區東關路三段235-2號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6238287197",
+      "lat": 24.169174,
+      "lng": 120.903713,
+      "name": "中油台中和平加油站",
+      "address": "臺中市和平區東關路三段5號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/10015907503",
+      "lat": 24.216683,
+      "lng": 120.569053,
+      "name": "Gogoro 電池交換站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6328504242",
+      "lat": 24.217854,
+      "lng": 120.648397,
+      "name": "中油大雅中清路加油站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6328504238",
+      "lat": 24.229213,
+      "lng": 120.648193,
+      "name": "臺中市大雅區公所站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6328504240",
+      "lat": 24.226172,
+      "lng": 120.65279,
+      "name": "全聯台中雅環店站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6328504237",
+      "lat": 24.236506,
+      "lng": 120.668561,
+      "name": "全聯大雅民生店站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6116044739",
+      "lat": 24.201406,
+      "lng": 120.703791,
+      "name": "7-ELEVEN 潭厝店站",
+      "address": "427013臺中市潭子區環中東路一段5號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/5839894883",
+      "lat": 24.207126,
+      "lng": 120.703236,
+      "name": "7-ELEVEN 圓通南店站",
+      "address": "42750臺中市潭子區圓通南路239號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6238287195",
+      "lat": 24.211604,
+      "lng": 120.700403,
+      "name": "HiLife 潭子曇晨店站",
+      "address": "42750臺中市潭子區勝利路209號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6533504767",
+      "lat": 24.215773,
+      "lng": 120.694291,
+      "name": "北基雅潭加油站",
+      "address": "臺中市潭子區雅潭路二段107號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/8999163843",
+      "lat": 24.213036,
+      "lng": 120.706277,
+      "name": "臺鐵潭子車站",
+      "address": "臺中市潭子區中山路二段352-1號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/7355108854",
+      "lat": 24.220408,
+      "lng": 120.705962,
+      "name": "寶熊漁樂碼頭站",
+      "address": "臺中市潭子區中山路三段11號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6306252298",
+      "lat": 24.231769,
+      "lng": 120.704323,
+      "name": "HiLife 豐原三和店站",
+      "address": "臺中市豐原區三和路349巷2號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545398",
+      "lat": 24.239133,
+      "lng": 120.714623,
+      "name": "家樂褔便利購豐南店站",
+      "address": "臺中市豐原區豐南街118號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545401",
+      "lat": 24.245834,
+      "lng": 120.708778,
+      "name": "全聯豐原成功店站",
+      "address": "42053臺中市豐原區成功路198號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/8999176259",
+      "lat": 24.248246,
+      "lng": 120.714425,
+      "name": "臺中市政府衛生局站",
+      "address": "臺中市豐原區中興路136號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545400",
+      "lat": 24.239601,
+      "lng": 120.721039,
+      "name": "全聯豐原田心店站",
+      "address": "臺中市豐原區田心路二段182號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6328504234",
+      "lat": 24.248205,
+      "lng": 120.808869,
+      "name": "全聯台中新社店站",
+      "address": "42641臺中市新社區中和街13號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545402",
+      "lat": 24.252009,
+      "lng": 120.706734,
+      "name": "家樂福豐原店站",
+      "address": "420臺中市豐原區成功路500號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545403",
+      "lat": 24.251888,
+      "lng": 120.715095,
+      "name": "Gogoro 豐原中山服務中心站",
+      "address": "臺中市豐原區豐西街6號一樓",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6116228333",
+      "lat": 24.25863,
+      "lng": 120.712958,
+      "name": "全聯豐原三豐店站",
+      "address": "臺中市神岡區五權路1號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545409",
+      "lat": 24.250384,
+      "lng": 120.731851,
+      "name": "全聯豐原豐東店站",
+      "address": "42048臺中市豐原區豐東路171號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545406",
+      "lat": 24.253235,
+      "lng": 120.721814,
+      "name": "Gogoro 豐原中正門市店站",
+      "address": "臺中市豐原區中正路38號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6119545408",
+      "lat": 24.253907,
+      "lng": 120.720735,
+      "name": "HiLife 豐原豐民店站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6238287198",
+      "lat": 24.259613,
+      "lng": 120.734585,
+      "name": "中油翁子加油站",
+      "address": "臺中市豐原區豐勢路一段588號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438675",
+      "lat": 24.297753,
+      "lng": 120.723975,
+      "name": "台糖七星加油站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6528768152",
+      "lat": 24.274571,
+      "lng": 120.777129,
+      "name": "7-ELEVEN 新石岡店站",
+      "address": "42265臺中市石岡區明德路118號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/7008024689",
+      "lat": 24.252839,
+      "lng": 120.829739,
+      "name": "Gogoro 東勢豐勢店站",
+      "address": "42343臺中市東勢區豐勢路263號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6238287196",
+      "lat": 24.261682,
+      "lng": 120.824106,
+      "name": "中油東勢加油站",
+      "address": "42353臺中市東勢區豐勢路678號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6528768153",
+      "lat": 24.264741,
+      "lng": 120.826173,
+      "name": "7-ELEVEN 東泰店站",
+      "address": "42341臺中市東勢區東蘭路41之5號",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438670",
+      "lat": 24.343302,
+      "lng": 120.588767,
+      "name": "中油大安加油站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438669",
+      "lat": 24.349247,
+      "lng": 120.616847,
+      "name": "HiLife 中縣大甲店站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438668",
+      "lat": 24.346334,
+      "lng": 120.62005,
+      "name": "全聯台中大甲店站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438672",
+      "lat": 24.313135,
+      "lng": 120.696039,
+      "name": "台糖月眉加油站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438674",
+      "lat": 24.305476,
+      "lng": 120.721695,
+      "name": "全聯后里文明店站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438673",
+      "lat": 24.315697,
+      "lng": 120.723842,
+      "name": "中油后里加油站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438665",
+      "lat": 24.350573,
+      "lng": 120.627646,
+      "name": "福懋大甲加油站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/6325438666",
+      "lat": 24.354799,
+      "lng": 120.631852,
+      "name": "中油大甲加油站",
+      "address": "",
+      "unavailable": false
+    },
+    {
+      "id": "osm:node/5911282999",
+      "lat": 24.245123,
+      "lng": 120.537846,
+      "name": "gogoro電池站",
+      "address": "",
+      "unavailable": false
+    }
+  ],
+  "fetchedAt": 1790999312706.0,
+  "source": "OSM original Door Map search-index tcg-search-202609-v4-master-r2",
+  "attribution": "OpenStreetMap contributors / ODbL 1.0",
+  "stale": true,
+  "originalIndexSha256": "47e82698f8901f85193c2e726d4dd1d2c2f51d96878f2ec9fb0d1c5968591718",
+  "coverage": "Saved regional Gogoro-tagged charging stations only; not the official full network or real-time availability."
+}

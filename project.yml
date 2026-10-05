@@ -1,0 +1,77 @@
+name: DoorMap581
+options:
+  minimumXcodeGenVersion: 2.41.0
+  developmentLanguage: zh-Hant
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    PRODUCT_BUNDLE_IDENTIFIER: com.door581.appletest
+    TARGETED_DEVICE_FAMILY: "1"
+targets:
+  DoorMap581:
+    type: application
+    platform: iOS
+    sources:
+      - path: DoorMap581
+        excludes:
+          - Info.plist
+          - MiniMap
+          - Behavior
+          - NativeData
+      - path: DoorMap581/MiniMap
+        type: folder
+        buildPhase: resources
+      - path: DoorMap581/Behavior
+        type: folder
+        buildPhase: resources
+      - path: DoorMap581/NativeData
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - sdk: libz.tbd
+    settings:
+      base:
+        INFOPLIST_FILE: DoorMap581/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        PRODUCT_MODULE_NAME: DoorMap581
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scheme:
+      testTargets:
+        - DoorMap581Tests
+        - DoorMap581UITests
+  DoorMap581Tests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: DoorMap581Tests
+        excludes:
+          - Fixtures
+      - path: DoorMap581Tests/Fixtures
+        type: folder
+        buildPhase: resources
+      - path: NativeCoreTests
+        excludes:
+          - NativeCoreFixtures
+      - path: NativeCoreTests/NativeCoreFixtures
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - target: DoorMap581
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.door581.appletest.tests
+        GENERATE_INFOPLIST_FILE: YES
+  DoorMap581UITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: DoorMap581UITests
+    dependencies:
+      - target: DoorMap581
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.door581.appletest.uitests
+        GENERATE_INFOPLIST_FILE: YES

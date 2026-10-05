@@ -1,0 +1,13 @@
+/* The main map is the native view underneath this transparent control surface. */
+html,body,#map{background:transparent!important}
+#map{pointer-events:none}
+.native-map-gesture-surface{overflow:visible}
+.native-map-gesture-surface .maplibregl-marker{pointer-events:none}
+.native-popup,.native-popup *{pointer-events:auto}
+.direction-unavailable .user-fan,.direction-unavailable .avatar-heading{opacity:0!important}
+#nativeAppleSettingsBtn{width:100%;padding:12px;border:0;background:transparent;color:inherit;text-align:left;font:inherit}
+#nativeTestTools{position:fixed;left:4px;top:132px;z-index:90;background:#192430d9;color:white;font-size:10px;max-width:190px}
+#nativeTestTools button{font-size:10px;padding:3px}
+body.route-editing #nativeTestTools{top:220px}
+#nativeTestStatus{display:block;max-width:185px;max-height:24px;overflow:hidden}
+body[data-native-test="1"] .credits-intro{display:none}

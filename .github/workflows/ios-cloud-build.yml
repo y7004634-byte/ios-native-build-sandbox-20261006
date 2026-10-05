@@ -1,0 +1,45 @@
+name: iOS Build Verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-native-build-sandbox
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: xcode-27
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Runner info
+        run: |
+          sw_vers
+          uname -m
+          xcodebuild -version
+      - name: Install XcodeGen
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: command -v xcodegen || brew install xcodegen
+      - name: Run targeted native verification
+        run: |
+          chmod +x scripts/cloud-test-native-navigation.sh
+          scripts/cloud-test-native-navigation.sh
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-native-verification-${{ github.run_id }}
+          retention-days: 1
+          if-no-files-found: warn
+          path: |
+            cloud-build/cloud-build.log
+            cloud-build/cloud-build.result.txt
+            cloud-build/native-tests-summary.json
+            cloud-build/simulator-devices.json
+            cloud-build/native-port

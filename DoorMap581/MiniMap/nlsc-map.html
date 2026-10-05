@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: blob: data: https://wmts.nlsc.gov.tw; connect-src https://wmts.nlsc.gov.tw; worker-src blob:; child-src blob:">
+<title>NLSC 門牌小圖</title><link rel="stylesheet" href="maplibre-gl.css">
+<style>
+html,body,#map{margin:0;width:100%;height:100%;overflow:hidden;background:#e9e8e3;font:12px -apple-system,sans-serif}
+#label{position:absolute;top:14px;left:50px;padding:4px 7px;border-radius:6px;background:#10151ce8;color:#eef3f8;pointer-events:none}
+#controls{position:absolute;right:8px;top:8px;display:flex;gap:6px}
+button{background:#10151ceb;color:#f4f6fa;border:1px solid #55616c;border-radius:12px;min-width:38px;height:38px;font:600 15px -apple-system,sans-serif}
+#apply{padding:0 10px;font-size:13px}button:disabled{opacity:.45}
+#zoom{position:absolute;right:8px;bottom:28px;display:flex;flex-direction:column;gap:5px}
+#credit{position:absolute;bottom:0;left:0;right:0;background:#111820e8;color:#c3cbd4;font-size:10px;padding:4px 7px;text-align:center;pointer-events:none}
+#coordinate{position:absolute;left:7px;bottom:26px;padding:3px 5px;border-radius:5px;background:#ffffffd8;color:#1b2430;font:11px ui-monospace,monospace;pointer-events:none}
+#error{position:absolute;left:7px;right:54px;top:54px;background:#56331de8;color:white;border-radius:6px;padding:6px;display:none}
+#reticle{position:absolute;left:50%;top:50%;width:36px;height:36px;transform:translate(-50%,-50%);pointer-events:none}
+#reticle:before,#reticle:after{content:"";position:absolute;background:#182632;box-shadow:0 0 0 1px #fff}
+#reticle:before{left:17px;top:0;width:2px;height:36px}#reticle:after{left:0;top:17px;width:36px;height:2px}
+html[data-theme=light] button,html[data-theme=light] #label{background:#f7f9fbed;color:#203040;border-color:#aab4be}
+.rider{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:17px solid #149cff;filter:drop-shadow(0 0 2px #fff)}
+</style></head><body>
+<div id="map" aria-label="國土測繪門牌地圖"></div><div id="label">NLSC 門牌</div>
+<div id="controls"><button id="recenter" aria-label="重新置中">⌖</button><button id="apply" disabled>定位修正</button></div>
+<div id="zoom"><button id="plus" aria-label="小圖放大">＋</button><button id="minus" aria-label="小圖縮小">−</button></div>
+<div id="reticle" aria-hidden="true"></div><div id="coordinate"></div>
+<div id="credit">國土測繪中心 · EMAP</div><div id="error" role="status">圖磚暫不可用，請確認網路後再修正終點</div>
+<script src="maplibre-gl.js"></script><script src="nlsc-contract.js"></script><script src="nlsc-map.js"></script>
+</body></html>
