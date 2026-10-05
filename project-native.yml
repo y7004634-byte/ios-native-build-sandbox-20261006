@@ -44,7 +44,7 @@ targets:
       - sdk: libz.tbd
     settings:
       base:
-        INFOPLIST_FILE: DoorMap581/Info.plist
+        INFOPLIST_FILE: NativeOnlyBuild/Info.plist
         GENERATE_INFOPLIST_FILE: NO
         PRODUCT_MODULE_NAME: DoorMap581
         CODE_SIGN_STYLE: Automatic
