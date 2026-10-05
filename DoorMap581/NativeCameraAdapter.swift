@@ -1,6 +1,5 @@
 import MapKit
 import UIKit
-import WebKit
 
 /// The planner's Mercator zoom and composition are translated, never replaced
 /// by setVisibleMapRect. Actual MapKit projection is sampled for DOM markers.
@@ -106,12 +105,4 @@ final class NativeContactObserver: UIGestureRecognizer {
     override func reset() { contacts.removeAll(); super.reset() }
     override func canPrevent(_ preventedGestureRecognizer: UIGestureRecognizer) -> Bool { false }
     override func canBePrevented(by preventingGestureRecognizer: UIGestureRecognizer) -> Bool { false }
-}
-
-final class NativeControlsWebView: WKWebView {
-    var controlRects: [CGRect] = []
-    var modalOpen = false
-    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-        modalOpen || controlRects.contains { $0.contains(point) }
-    }
 }

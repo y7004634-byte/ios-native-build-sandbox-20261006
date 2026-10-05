@@ -1,0 +1,38 @@
+name: iOS Native Package Candidate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-native-build-sandbox
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: xcode-27
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install XcodeGen
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: command -v xcodegen || brew install xcodegen
+      - name: Build native-only unsigned IPA
+        run: |
+          chmod +x scripts/package-native-only.sh
+          scripts/package-native-only.sh
+      - name: Upload native-only IPA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-native-build9-${{ github.run_id }}
+          retention-days: 1
+          if-no-files-found: warn
+          path: |
+            native-only-build/DoorMap581Native-v0.4.0-build9-unsigned.ipa
+            native-only-build/package.result.txt
+            native-only-build/package.log
