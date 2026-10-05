@@ -1235,7 +1235,7 @@ import UniformTypeIdentifiers
            !cluster.memberAnnotations.isEmpty,
            cluster.memberAnnotations.allSatisfy({ $0 is BatteryStationAnnotation }) {
             mapView.deselectAnnotation(cluster, animated: false)
-            let coordinates = cluster.memberAnnotations.map(\\.coordinate)
+            let coordinates = cluster.memberAnnotations.map(\.coordinate)
             if let first = coordinates.first {
                 var rect = MKMapRect(origin: MKMapPoint(first), size: MKMapSize(width: 1, height: 1))
                 for point in coordinates.dropFirst() { rect = rect.union(MKMapRect(origin: MKMapPoint(point), size: MKMapSize(width: 1, height: 1))) }
