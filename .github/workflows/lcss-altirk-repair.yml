@@ -112,7 +112,7 @@ jobs:
               assert any("LiveProcess.appex" in name for name in names)
               assert not any("LiveWidgetExtension.appex" in name for name in names)
               count=len(names)
-          assert "RELAYTEST1" in plistlib.loads(z.read("Payload/LiveContainer.app/Frameworks/SideStoreApp.framework/Info.plist"))["CFBundleShortVersionString"]
+              assert "RELAYTEST1" in plistlib.loads(z.read("Payload/LiveContainer.app/Frameworks/SideStoreApp.framework/Info.plist"))["CFBundleShortVersionString"]
           report={"status":"ENGINEERING_LAN_RELAY_BUILT_NOT_DEVICE_TESTED","sha256":hashlib.sha256(output.read_bytes()).hexdigest(),"bytes":output.stat().st_size,"zip_entries":count,"removed_widget_entries":len(removed),"ios_tls_test":"NOT_TESTED"}
           Path("lcss-final-result.json").write_text(json.dumps(report,indent=2)+"\n")
           print(json.dumps(report))
