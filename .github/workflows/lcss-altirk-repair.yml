@@ -1,14 +1,14 @@
-name: LCSS Windows WiFi Relay Candidate
+name: LCSS Windows WiFi Relay RP InitGate V2
 
 on:
   push:
-    branches: [lcss-pc-wifi-relay-20261021]
+    branches: [lcss-pc-wifi-relay-initfix-20261021]
 
 permissions:
   contents: read
 
 concurrency:
-  group: lcss-pc-wifi-relay-20261021
+  group: lcss-pc-wifi-relay-initfix-20261021
   cancel-in-progress: false
 
 jobs:
@@ -36,6 +36,7 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           python3 lcss-pairing/patch_gateway_serial.py
           python3 lcss-pairing/patch_gateway_wifi_relay.py
+          python3 lcss-pairing/patch_rp_init_gate.py
           cd lcss-source
           cp lcss-pairing-fix-result.json "$GITHUB_WORKSPACE/"
           cp lcss-pairing-fix.diff "$GITHUB_WORKSPACE/"
@@ -85,7 +86,7 @@ jobs:
           import hashlib,json,zipfile,plistlib
           from pathlib import Path
           source=Path("lc-source/LiveContainer+SideStore.ipa")
-          output=Path("LCSS_WIFI_PC_RELAY_TEST_20261021_4APPID_UNSIGNED.ipa")
+          output=Path("LCSS_WIFI_PC_RELAY_INITFIX2_20261021_4APPID_UNSIGNED.ipa")
           removed=[]
           with zipfile.ZipFile(source) as zin, zipfile.ZipFile(output,"w") as zout:
               for item in zin.infolist():
@@ -95,7 +96,7 @@ jobs:
                   data=zin.read(item.filename)
                   if item.filename=="Payload/LiveContainer.app/Frameworks/SideStoreApp.framework/Info.plist":
                       pl=plistlib.loads(data)
-                      pl["CFBundleShortVersionString"]="0.7.0-RELAYTEST1-20261021"
+                      pl["CFBundleShortVersionString"]="0.7.0-RELAYTEST2-20261021"
                       data=plistlib.dumps(pl,fmt=plistlib.FMT_XML)
                   if item.filename=="Payload/LiveContainer.app/Info.plist":
                       pl=plistlib.loads(data)
@@ -112,7 +113,7 @@ jobs:
               assert any("LiveProcess.appex" in name for name in names)
               assert not any("LiveWidgetExtension.appex" in name for name in names)
               count=len(names)
-              assert "RELAYTEST1" in plistlib.loads(z.read("Payload/LiveContainer.app/Frameworks/SideStoreApp.framework/Info.plist"))["CFBundleShortVersionString"]
+              assert "RELAYTEST2" in plistlib.loads(z.read("Payload/LiveContainer.app/Frameworks/SideStoreApp.framework/Info.plist"))["CFBundleShortVersionString"]
           report={"status":"ENGINEERING_LAN_RELAY_BUILT_NOT_DEVICE_TESTED","sha256":hashlib.sha256(output.read_bytes()).hexdigest(),"bytes":output.stat().st_size,"zip_entries":count,"removed_widget_entries":len(removed),"ios_tls_test":"NOT_TESTED"}
           Path("lcss-final-result.json").write_text(json.dumps(report,indent=2)+"\n")
           print(json.dumps(report))
@@ -121,11 +122,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lcss-wifi-relay-candidate-20261021
+          name: lcss-wifi-relay-initfix2-20261021
           retention-days: 3
           if-no-files-found: warn
           path: |
-            LCSS_WIFI_PC_RELAY_TEST_20261021_4APPID_UNSIGNED.ipa
+            LCSS_WIFI_PC_RELAY_INITFIX2_20261021_4APPID_UNSIGNED.ipa
             lcss-final-result.json
             lcss-pairing-fix-result.json
             lcss-pairing-fix.diff
@@ -133,6 +134,8 @@ jobs:
             lcss-ffi-serial.diff
             lcss-wifi-relay-result.json
             lcss-wifi-relay.diff
+            lcss-rp-init-gate-result.json
+            lcss-rp-init-gate.diff
             sidestore-ipa.sha256
             sidestore-build.log
             livecontainer-build.log
