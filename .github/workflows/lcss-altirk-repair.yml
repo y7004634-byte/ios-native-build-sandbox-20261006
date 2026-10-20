@@ -1,14 +1,14 @@
-name: LCSS RPPairing FFI Serialization Candidate
+name: LCSS Windows WiFi Relay Candidate
 
 on:
   push:
-    branches: [lcss-ffi-serial-20261021]
+    branches: [lcss-pc-wifi-relay-20261021]
 
 permissions:
   contents: read
 
 concurrency:
-  group: lcss-ffi-serial-20261021
+  group: lcss-pc-wifi-relay-20261021
   cancel-in-progress: false
 
 jobs:
@@ -35,6 +35,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/lcss-pairing/patch_pairing.py" "SideStore/Core/Pairing/PairingFileManager.swift"
           cd "$GITHUB_WORKSPACE"
           python3 lcss-pairing/patch_gateway_serial.py
+          python3 lcss-pairing/patch_gateway_wifi_relay.py
           cd lcss-source
           cp lcss-pairing-fix-result.json "$GITHUB_WORKSPACE/"
           cp lcss-pairing-fix.diff "$GITHUB_WORKSPACE/"
@@ -81,17 +82,29 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import hashlib,json,zipfile
+          import hashlib,json,zipfile,plistlib
           from pathlib import Path
           source=Path("lc-source/LiveContainer+SideStore.ipa")
-          output=Path("LCSS_RP_ALTIRK_FFI_SERIAL_TEST_20261021_4APPID_UNSIGNED.ipa")
+          output=Path("LCSS_WIFI_PC_RELAY_TEST_20261021_4APPID_UNSIGNED.ipa")
           removed=[]
           with zipfile.ZipFile(source) as zin, zipfile.ZipFile(output,"w") as zout:
               for item in zin.infolist():
                   if "/PlugIns/LiveWidgetExtension.appex" in item.filename:
                       removed.append(item.filename)
                       continue
-                  zout.writestr(item,zin.read(item.filename))
+                  data=zin.read(item.filename)
+                  if item.filename=="Payload/LiveContainer.app/Frameworks/SideStoreApp.framework/Info.plist":
+                      pl=plistlib.loads(data)
+                      pl["CFBundleShortVersionString"]="0.7.0-RELAYTEST1-20261021"
+                      data=plistlib.dumps(pl,fmt=plistlib.FMT_XML)
+                  if item.filename=="Payload/LiveContainer.app/Info.plist":
+                      pl=plistlib.loads(data)
+                      ats=pl.get("NSAppTransportSecurity",{})
+                      ats["NSAllowsLocalNetworking"]=True
+                      pl["NSAppTransportSecurity"]=ats
+                      pl["NSLocalNetworkUsageDescription"]="LCSS WiFi Relay TEST connects to your chosen Windows computer over the local network."
+                      data=plistlib.dumps(pl,fmt=plistlib.FMT_XML)
+                  zout.writestr(item,data)
           with zipfile.ZipFile(output) as z:
               assert z.testzip() is None
               names=set(z.namelist())
@@ -99,7 +112,8 @@ jobs:
               assert any("LiveProcess.appex" in name for name in names)
               assert not any("LiveWidgetExtension.appex" in name for name in names)
               count=len(names)
-          report={"status":"ENGINEERING_SERIAL_BUILT_NOT_DEVICE_TESTED","sha256":hashlib.sha256(output.read_bytes()).hexdigest(),"bytes":output.stat().st_size,"zip_entries":count,"removed_widget_entries":len(removed),"ios_tls_test":"NOT_TESTED"}
+          assert "RELAYTEST1" in plistlib.loads(z.read("Payload/LiveContainer.app/Frameworks/SideStoreApp.framework/Info.plist"))["CFBundleShortVersionString"]
+          report={"status":"ENGINEERING_LAN_RELAY_BUILT_NOT_DEVICE_TESTED","sha256":hashlib.sha256(output.read_bytes()).hexdigest(),"bytes":output.stat().st_size,"zip_entries":count,"removed_widget_entries":len(removed),"ios_tls_test":"NOT_TESTED"}
           Path("lcss-final-result.json").write_text(json.dumps(report,indent=2)+"\n")
           print(json.dumps(report))
           PY
@@ -107,16 +121,18 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lcss-ffi-serial-candidate-20261021
+          name: lcss-wifi-relay-candidate-20261021
           retention-days: 3
           if-no-files-found: warn
           path: |
-            LCSS_RP_ALTIRK_FFI_SERIAL_TEST_20261021_4APPID_UNSIGNED.ipa
+            LCSS_WIFI_PC_RELAY_TEST_20261021_4APPID_UNSIGNED.ipa
             lcss-final-result.json
             lcss-pairing-fix-result.json
             lcss-pairing-fix.diff
             lcss-ffi-serial-result.json
             lcss-ffi-serial.diff
+            lcss-wifi-relay-result.json
+            lcss-wifi-relay.diff
             sidestore-ipa.sha256
             sidestore-build.log
             livecontainer-build.log
