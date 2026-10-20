@@ -1,0 +1,118 @@
+name: LCSS RPPairing alt_irk Repair Candidate
+
+on:
+  push:
+    branches: [lcss-remote-pairing-irk-20261021]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lcss-rppairing-fix-20261021
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 65
+    steps:
+      - name: Checkout isolated build scripts
+        uses: actions/checkout@v4
+      - name: Set up Xcode 26.4
+        uses: maxim-lobanov/setup-xcode@v1.6.0
+        with:
+          xcode-version: '26.4'
+      - name: Install build tools
+        run: |
+          command -v ldid >/dev/null || brew install ldid
+          command -v xcbeautify >/dev/null || brew install xcbeautify
+      - name: Fetch pinned LC SideStore fork and apply one-field fix
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --recurse-submodules --branch LiveContainerSupport https://github.com/LiveContainer/SideStore.git lcss-source
+          cd lcss-source
+          test "$(git rev-parse HEAD)" = "ee3cc16a67f9fed766f79a0ed70938f0f8ad5a07"
+          python3 "$GITHUB_WORKSPACE/lcss-pairing/patch_pairing.py" "SideStore/Core/Pairing/PairingFileManager.swift"
+          cp lcss-pairing-fix-result.json "$GITHUB_WORKSPACE/"
+          cp lcss-pairing-fix.diff "$GITHUB_WORKSPACE/"
+      - name: Prime known SideStore binary dependencies
+        run: |
+          set -euo pipefail
+          DIR="$HOME/Library/Caches/org.swift.swiftpm/artifacts"
+          mkdir -p "$DIR"
+          curl -fLsS --retry 2 --max-time 180 "https://github.com/krzyzanowskim/OpenSSL/releases/download/3.6.2000/OpenSSL.xcframework.zip" -o "$DIR/https___github_com_krzyzanowskim_OpenSSL_releases_download_3_6_2000_OpenSSL_xcframework_zip"
+          curl -fLsS --retry 2 --max-time 180 "https://github.com/mahee96/unicorn/releases/download/2.1.4-multiarch/Unicorn.xcframework.zip" -o "$DIR/https___github_com_mahee96_unicorn_releases_download_2_1_4_multiarch_Unicorn_xcframework_zip"
+      - name: Build fork SideStore unsigned IPA
+        run: |
+          set -euo pipefail
+          cd lcss-source
+          python3 scripts/ci/workflow.py build > "$GITHUB_WORKSPACE/sidestore-build.log" 2>&1
+          test -s SideStore.ipa
+          shasum -a 256 SideStore.ipa > "$GITHUB_WORKSPACE/sidestore-ipa.sha256"
+      - name: Fetch pinned LiveContainer and build unsigned app
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --recurse-submodules --branch main https://github.com/LiveContainer/LiveContainer.git lc-source
+          cd lc-source
+          test "$(git rev-parse HEAD)" = "9108ae624ea001f7d7696d48407f890b48fa2653"
+          xcodebuild archive -archivePath archive -scheme LiveContainer -project LiveContainer.xcodeproj -sdk iphoneos -arch arm64 -configuration Release CODE_SIGNING_ALLOWED=NO > "$GITHUB_WORKSPACE/livecontainer-build.log" 2>&1
+          test -d archive.xcarchive/Products/Applications/LiveContainer.app
+      - name: Package patched LC+SS using official layout
+        run: |
+          set -euo pipefail
+          cd lc-source
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path(".github/build_github.sh")
+          content=p.read_text()
+          old="wget https://github.com/LiveContainer/SideStore/releases/download/nightly/SideStore.ipa"
+          new='cp "$GITHUB_WORKSPACE/lcss-source/SideStore.ipa" SideStore.ipa'
+          assert content.count(old)==1
+          p.write_text(content.replace(old,new,1))
+          PY
+          export scheme=LiveContainer
+          export archive_path=archive
+          bash .github/build_github.sh > "$GITHUB_WORKSPACE/lcss-package.log" 2>&1
+          test -s LiveContainer+SideStore.ipa
+      - name: Remove optional widget and validate four-App-ID IPA
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,zipfile
+          from pathlib import Path
+          source=Path("lc-source/LiveContainer+SideStore.ipa")
+          output=Path("LCSS_RP_ALTIRK_TEST_20261021_4APPID_UNSIGNED.ipa")
+          removed=[]
+          with zipfile.ZipFile(source) as zin, zipfile.ZipFile(output,"w") as zout:
+              for item in zin.infolist():
+                  if "/PlugIns/LiveWidgetExtension.appex" in item.filename:
+                      removed.append(item.filename)
+                      continue
+                  zout.writestr(item,zin.read(item.filename))
+          with zipfile.ZipFile(output) as z:
+              assert z.testzip() is None
+              names=set(z.namelist())
+              assert "Payload/LiveContainer.app/Frameworks/SideStoreApp.framework/SideStore" in names
+              assert any("LiveProcess.appex" in name for name in names)
+              assert not any("LiveWidgetExtension.appex" in name for name in names)
+              count=len(names)
+          report={"status":"ENGINEERING_BUILT_NOT_DEVICE_TESTED","sha256":hashlib.sha256(output.read_bytes()).hexdigest(),"bytes":output.stat().st_size,"zip_entries":count,"removed_widget_entries":len(removed),"ios_tls_test":"NOT_TESTED"}
+          Path("lcss-final-result.json").write_text(json.dumps(report,indent=2)+"\n")
+          print(json.dumps(report))
+          PY
+      - name: Upload candidate and repair evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcss-remote-pairing-altirk-candidate-20261021
+          retention-days: 3
+          if-no-files-found: warn
+          path: |
+            LCSS_RP_ALTIRK_TEST_20261021_4APPID_UNSIGNED.ipa
+            lcss-final-result.json
+            lcss-pairing-fix-result.json
+            lcss-pairing-fix.diff
+            sidestore-ipa.sha256
+            sidestore-build.log
+            livecontainer-build.log
+            lcss-package.log
