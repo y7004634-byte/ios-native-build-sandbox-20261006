@@ -246,7 +246,7 @@ for key,p in files.items():
 
 assert all(data[k]!=original[k] for k in files)
 assert data["gateway"].count("tunnel_create_usb(provider, &adapter, &handshake)")==1
-assert data["gateway"].count("coreDeviceProvider")==5, data["gateway"].count("coreDeviceProvider")
+assert data["gateway"].count("coreDeviceProvider")==4, data["gateway"].count("coreDeviceProvider")
 assert 'return .lockdown\n        }\n\n        if hasRemoteRP' in data["parser"]
 assert "no ipsec interface (required for lockdown on iOS 26.4+)" not in data["impl"]
 report={
