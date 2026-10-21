@@ -1,0 +1,38 @@
+name: LCSS Pinned CoreDevice Source Compatibility Audit
+on:
+  push:
+    branches: [lcss-coredevice-compat-audit-20261021]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lcss-pinned-coredevice-audit-20261021
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read-only exact public upstream source compatibility
+        run: |
+          set -euo pipefail
+          python3 -B coredevice/compat_audit.py
+          python3 - <<'PY'
+          import json
+          d=json.load(open("lcss_coredevice_compat_report.json"))
+          assert d["attempted_iphone_or_apple_api_access"] is False
+          assert d["apple_id_or_pairing_contents_fetched"] is False
+          assert d["actual_refresh_success"] == "NOT_VALIDATED"
+          assert d["status"] in {"SOURCE_AUDIT_COMPLETE_NON_DEPLOYABLE","SOURCE_AUDIT_REQUIRES_MORE_DETAIL"}
+          print("SOURCE_ONLY_CANARY_PASS",d["status"])
+          PY
+      - name: Upload only redacted source analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcss-coredevice-compat-report-20261021
+          path: lcss_coredevice_compat_report.json
+          if-no-files-found: error
+          retention-days: 7
