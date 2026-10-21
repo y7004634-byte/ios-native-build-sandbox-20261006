@@ -1,0 +1,70 @@
+diff --git a/src-tauri/Cargo.toml b/src-tauri/Cargo.toml
+index 12b603a..4b7c598 100644
+--- a/src-tauri/Cargo.toml
++++ b/src-tauri/Cargo.toml
+@@ -22,7 +22,7 @@ tauri = { version = "2", features = ["devtools"] }
+ tauri-plugin-opener = "2"
+ serde = { version = "1", features = ["derive"] }
+ serde_json = "1"
+-idevice = { version = "0.1.68", features = ["usbmuxd", "house_arrest", "afc", "core_device_proxy", "remote_pairing", "tcp", "tunnel_tcp_stack", "xpc", "rsd", "pair"] }
++idevice = { version = "0.1.68", features = ["usbmuxd", "house_arrest", "afc", "core_device_proxy", "remote_pairing", "tcp", "tunnel_tcp_stack", "xpc", "rsd", "pair", "misagent"] }
+ isideload = { version = "0.4.6", features = ["fs-storage"] } # , path = "../../isideload/isideload" } #, git = "https://github.com/nab138/isideload", package = "isideload", branch = "apple-codesign-quick" }
+ keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "linux-native-sync-persistent"] }
+ tauri-plugin-store = "2"
+diff --git a/src-tauri/src/lib.rs b/src-tauri/src/lib.rs
+index b217fe9..add2bc2 100644
+--- a/src-tauri/src/lib.rs
++++ b/src-tauri/src/lib.rs
+@@ -8,6 +8,7 @@ mod sideload;
+ mod pairing;
+ #[macro_use]
+ mod secure_storage;
++mod profile_refresh;
+ mod error;
+ mod logging;
+ mod operation;
+@@ -26,6 +27,7 @@ use crate::{
+     },
+     secure_storage::{force_disable_keyring, keyring_available},
+     sideload::{SideloaderMutex, install_sidestore_operation, sideload_operation},
++    profile_refresh::{preview_lcss_profile_renewal, renew_lcss_profiles_via_wifi},
+ };
+ use tauri::Manager;
+ use tracing_subscriber::{Layer, Registry, fmt, layer::SubscriberExt, util::SubscriberInitExt};
+@@ -126,6 +128,8 @@ pub fn run() {
+             force_disable_keyring,
+             cancel_pairing,
+             has_stored_rppairing,
++            preview_lcss_profile_renewal,
++            renew_lcss_profiles_via_wifi,
+         ])
+         .run(tauri::generate_context!())
+         .expect("error while running tauri application");
+diff --git a/src/App.tsx b/src/App.tsx
+index 61f0916..32b0fc5 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -20,6 +20,7 @@ import { Modal } from "./components/Modal";
+ import { Certificates } from "./pages/Certificates";
+ import { AppIds } from "./pages/AppIds";
+ import { Settings } from "./pages/Settings";
++import { ProfileRenewal } from "./components/ProfileRenewal";
+ import { Pairing } from "./pages/Pairing";
+ import { getVersion } from "@tauri-apps/api/app";
+ import { checkForUpdates } from "./update";
+@@ -409,6 +410,15 @@ function App() {
+               />
+             </GlassCard>
+           </section>
++          <section className="workspace-section">
++            <GlassCard className="panel settings-panel">
++              <ProfileRenewal
++                connected={selectedDevice !== null}
++                signedIn={loggedInAs !== null}
++                connectionType={selectedDevice?.connectionType ?? null}
++              />
++            </GlassCard>
++          </section>
+           {operationState && (
+             <OperationView
+               operationState={operationState}
