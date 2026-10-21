@@ -1,0 +1,71 @@
+name: LCSS Native CoreDevice Binary Evidence
+on:
+  push:
+    branches: [lcss-coredevice-binary-verify-20261021]
+permissions:
+  contents: read
+concurrency:
+  group: lcss-native-coredevice-binary-verify
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: macos-26
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify currently pinned SideStore idevice prebuilt XCFramework symbols
+        run: |
+          set -euo pipefail
+          URL='https://github.com/SideStore/idevice/releases/download/v0.1.68-ss-3e55c84/idevice-xcframework-v0.1.68-ss-3e55c84.zip'
+          curl --fail --location --retry 2 --retry-delay 2 "$URL" -o /tmp/lcss-idevice-current.zip
+          printf '445702d53942597deb4cdec2c4122d16a3f4ac124ce26cd75b68dab3dad92416  /tmp/lcss-idevice-current.zip\n' | shasum -a 256 --check
+          mkdir -p /tmp/lcss-current-framework
+          ditto -x -k /tmp/lcss-idevice-current.zip /tmp/lcss-current-framework
+          find /tmp/lcss-current-framework -type f \( -name '*.a' -o -name 'idevice.h' \) -print
+          python3 - <<'PY'
+          import pathlib,subprocess,json
+          root=pathlib.Path('/tmp/lcss-current-framework')
+          libs=list(root.rglob('*.a'))
+          hs=list(root.rglob('idevice.h'))
+          if not libs: raise SystemExit('FAIL no static library in the exact official XCFramework')
+          observed={}
+          for lib in libs:
+              if not any(x in str(lib) for x in ('ios-arm64/','ios-arm64_')):
+                  continue
+              nm=subprocess.run(['xcrun','nm','-arch','arm64','-g',str(lib)],capture_output=True,text=True,timeout=130)
+              if nm.returncode: raise SystemExit('FAIL nm '+nm.stderr[-600:])
+              symbols=nm.stdout
+              observed[str(lib.relative_to(root))]={
+                  'tunnel_create_usb': '_tunnel_create_usb' in symbols,
+                  'tunnel_create_rppairing': '_tunnel_create_rppairing' in symbols,
+                  'idevice_provider_free': '_idevice_provider_free' in symbols,
+                  'rsd_handshake_free': '_rsd_handshake_free' in symbols,
+                  'adapter_free': '_adapter_free' in symbols,
+              }
+          if not observed: raise SystemExit('FAIL no iOS ARM64 static library found')
+          header_check={str(h.relative_to(root)):{
+              'tunnel_create_usb': 'tunnel_create_usb(' in h.read_text(errors='replace'),
+              'tunnel_create_rppairing': 'tunnel_create_rppairing' in h.read_text(errors='replace')
+          } for h in hs}
+          verdict=all(v['tunnel_create_usb'] and v['idevice_provider_free'] for v in observed.values()) and any(v['tunnel_create_usb'] for v in header_check.values())
+          report={
+             'status':'PASS_PREBUILT_HAS_COREDEVICE_USB_FFI' if verdict else 'FAIL_MISSING_PREBUILT_COREDEVICE_USB_FFI',
+             'binary_pin':'SideStore idevice v0.1.68-ss-3e55c84',
+             'zip_sha256':'445702d53942597deb4cdec2c4122d16a3f4ac124ce26cd75b68dab3dad92416',
+             'symbols':observed,'headers':header_check,
+             'new_rust_binary_needed_for_tunnel_create_usb':not verdict,
+             'iOS27_device_refresh_accepted':False,
+             'any_device_access':False,
+             'any_apple_account_access':False,
+          }
+          pathlib.Path('lcss-native-coredevice-binary-evidence.json').write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report))
+          if not verdict: raise SystemExit('Current prebuilt lacks required FFI; no blind port')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lcss-native-coredevice-binary-evidence-20261021
+          path: lcss-native-coredevice-binary-evidence.json
+          if-no-files-found: warn
+          retention-days: 7
