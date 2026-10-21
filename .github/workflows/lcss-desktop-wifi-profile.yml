@@ -1,0 +1,89 @@
+name: iLoader Wi-Fi Profile-Only Prototype (Build Only)
+
+on:
+  push:
+    branches: [lcss-desktop-wifi-profile-20261022]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lcss-desktop-wifi-profile-20261022
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    runs-on: windows-latest
+    timeout-minutes: 65
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Checkout isolated build inputs
+        uses: actions/checkout@v4
+
+      - name: Fetch exact iLoader 2.3.10 upstream source
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch v2.3.10 https://github.com/nab138/iloader.git iloader
+          $actual = (git -C iloader rev-parse HEAD).Trim()
+          if ($actual -ne '18907b1a801ed1d5aed3304c5477696c5d3ca411') {
+            throw "Unapproved upstream revision $actual"
+          }
+
+      - name: Patch only the new desktop profile feature
+        shell: pwsh
+        run: |
+          Copy-Item desktop/profile_refresh.rs iloader/src-tauri/src/profile_refresh.rs
+          Copy-Item desktop/ProfileRenewal.tsx iloader/src/components/ProfileRenewal.tsx
+          git -C iloader apply ../desktop/iloader-source.patch
+          git -C iloader diff --check
+          $diff = git -C iloader diff --stat
+          Write-Output $diff
+          if ((Select-String -Path iloader/src-tauri/src/profile_refresh.rs -Pattern 'misagent.install' -SimpleMatch).Count -ne 1) {
+            throw "Expected exactly one profile installation call in bounded feature"
+          }
+
+      - name: Set up Node for frontend typecheck
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install frontend dependencies
+        working-directory: iloader
+        shell: pwsh
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund
+
+      - name: Frontend TypeScript and release build
+        working-directory: iloader
+        shell: pwsh
+        run: npm run build
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust compile check (no real device or Apple service)
+        working-directory: iloader
+        shell: pwsh
+        run: cargo check --manifest-path src-tauri/Cargo.toml --tests
+
+      - name: Profile safety unit tests (synthetic only)
+        working-directory: iloader
+        shell: pwsh
+        run: cargo test --manifest-path src-tauri/Cargo.toml --lib profile_refresh::tests -- --nocapture
+
+      - name: Build separate Windows test executable without installer
+        working-directory: iloader
+        shell: pwsh
+        run: cargo build --release --manifest-path src-tauri/Cargo.toml
+
+      - name: Upload experimental build, never auto-install or deploy
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcss-profile-only-iloader-2.3.10-experimental
+          path: |
+            iloader/src-tauri/target/release/iloader.exe
+            desktop/iloader-source.patch
+          if-no-files-found: error
+          retention-days: 3
