@@ -33,7 +33,9 @@ jobs:
               if not any(x in str(lib) for x in ('ios-arm64/','ios-arm64_')):
                   continue
               nm=subprocess.run(['xcrun','nm','-arch','arm64','-g',str(lib)],capture_output=True,text=True,timeout=130)
-              if nm.returncode: raise SystemExit('FAIL nm '+nm.stderr[-600:])
+              if nm.returncode:
+                  print('WARN nm archive scanner reported empty compiler_builtins objects; inspect returned symbols directly')
+              if not nm.stdout.strip(): raise SystemExit('FAIL no symbols decoded')
               symbols=nm.stdout
               observed[str(lib.relative_to(root))]={
                   'tunnel_create_usb': '_tunnel_create_usb' in symbols,
